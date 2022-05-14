@@ -1,0 +1,85 @@
+#pragma kernel CSMain
+
+struct Agent{
+    float2 pos;
+    float angle;
+    float sensorAngle;
+    float sensorOffset;
+};
+
+const float MAXHASH = 4294967295.0;
+
+RWStructuredBuffer<Agent> agents;
+RWTexture2D<float4> trailMap;
+
+uint width;
+uint height;
+
+float speed;
+float turnSpeed;
+float deltaTime;
+
+float globalSensorAngle;
+float globalSensorOffset;
+
+uint hash(uint value){
+    value ^= 2747636419u;
+    value *= 2654435769u;
+    value ^= value >> 16;
+    value *= 2654435769u;
+    value ^= value >> 16;
+    value *= 2654435769u;
+    return value;
+}
+
+int2 GetSensorPos(Agent agent, int dir){
+    if (dir == -1){
+        return agent.pos + float2(cos(agent.angle + agent.sensorAngle), sin(agent.angle + agent.sensorAngle)) * agent.sensorOffset;
+    }
+    if (dir == 1){
+        return agent.pos + float2(cos(agent.angle - agent.sensorAngle), sin(agent.angle - agent.sensorAngle)) * agent.sensorOffset;
+    }
+    return agent.pos + float2(cos(agent.angle), sin(agent.angle)) * agent.sensorOffset;
+}
+
+float GetNewAngle(float flVal, float frVal, float fVal, Agent agent, uint id){
+    if ((fVal < flVal) && (fVal < frVal)){
+        if (hash(agent.pos.y * width + agent.pos.x + hash(id.x)) / 4294967295.0 > 0.5){
+            return agent.angle + agent.sensorAngle * turnSpeed * deltaTime;
+        }
+        else{
+            return agent.angle - agent.sensorAngle * turnSpeed * deltaTime;
+        }
+    }
+    else if (flVal < frVal){
+        return agent.angle - agent.sensorAngle * turnSpeed * deltaTime;
+    }
+    else if (frVal < flVal){
+        return agent.angle + agent.sensorAngle * turnSpeed * deltaTime;
+    }
+    return agent.angle;
+}
+
+[numthreads(1000,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    Agent agent = agents[id.x];
+    agent.sensorAngle = globalSensorAngle;
+    agent.sensorOffset = globalSensorOffset;
+    agent.pos += float2(cos(agent.angle), sin(agent.angle)) * speed * deltaTime;
+
+    if (agent.pos.x < 0.0 || agent.pos.x >= width || agent.pos.y < 0.0 || agent.pos.y >= height){
+        agent.pos.x = min(width - 0.01, max(0, agent.pos.x));
+        agent.pos.y = min(height - 0.01, max(0, agent.pos.y));
+        float randomAngle = (float)hash(agent.pos.y * width + agent.pos.x + hash(id.x)) / 4294967295.0 * 2.0 * 3.14159265359;
+        agent.angle += randomAngle;
+    }
+    else{
+        int2 fl = GetSensorPos(agent, -1);
+        int2 fr = GetSensorPos(agent, 1);
+        int2 f = GetSensorPos(agent, 0);
+        agent.angle = GetNewAngle(trailMap[fl], trailMap[fr], trailMap[f], agent, id.x);   
+    }
+    trailMap[int2(agent.pos.x, agent.pos.y)] = 1;
+    agents[id.x] = agent;
+}

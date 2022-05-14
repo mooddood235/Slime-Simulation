@@ -1,0 +1,21 @@
+#pragma kernel CSMain
+
+
+RWTexture2D<float4> trailMap;
+RWTexture2D<float4> processingMap;
+float decaySpeed;
+float deltaTime;
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float mean = 0;
+    for (int x = -1; x <= 1; x++){
+        for (int y = -1; y <= 1; y++){
+            mean += trailMap[id.xy + int2(x, y)];
+        }
+    }
+    mean /= 9.0;
+    processingMap[id.xy] = mean;
+    trailMap[id.xy] = max(0, trailMap[id.xy] - decaySpeed * deltaTime);
+}
