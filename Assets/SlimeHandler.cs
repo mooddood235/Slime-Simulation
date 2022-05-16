@@ -12,6 +12,8 @@ public class SlimeHandler : MonoBehaviour
     [SerializeField] private float turnSpeed;
     [SerializeField] private float sensorAngle;
     [SerializeField] private float sensorOffset;
+    [SerializeField] private SpawnPosition spawnPos;
+    [SerializeField] private SpawnDirection spawnDir;
     [Space]
     [SerializeField] private RenderTexture trailMap;
     [SerializeField] private RenderTexture processedTrailMap;
@@ -43,7 +45,7 @@ public class SlimeHandler : MonoBehaviour
     }
 
     private void DispatchDataCompute(){
-        ComputeBuffer agentsCB = new ComputeBuffer((int)agentCount, 5 * sizeof(float));
+        ComputeBuffer agentsCB = new ComputeBuffer((int)agentCount, 3 * sizeof(float));
         agentsCB.SetData(agents);
         dataCompute.SetBuffer(0, "agents", agentsCB);
 
@@ -51,13 +53,11 @@ public class SlimeHandler : MonoBehaviour
 
         dataCompute.SetInt("width", (int)width);
         dataCompute.SetInt("height", (int)height);
-
+        dataCompute.SetFloat("deltaTime", Time.deltaTime);
         dataCompute.SetFloat("speed", speed);
         dataCompute.SetFloat("turnSpeed", turnSpeed);
-        dataCompute.SetFloat("deltaTime", Time.deltaTime);
-
-        dataCompute.SetFloat("globalSensorAngle", sensorAngle);
-        dataCompute.SetFloat("globalSensorOffset", sensorOffset);
+        dataCompute.SetFloat("sensorAngle", sensorAngle);
+        dataCompute.SetFloat("sensorOffset", sensorOffset);
 
         dataCompute.Dispatch(0, (int)agentCount / 1000, 1, 1);
 
@@ -74,12 +74,49 @@ public class SlimeHandler : MonoBehaviour
     }
 
     private void CreateAgents(uint count){
-        float sqrtCount = Mathf.Sqrt(count);
+        Vector2 pos = new Vector2();
+        float angle = 0;
+
+        float centerX = width / 2f;
+        float centerY = height / 2f;
+        float bound = height / 3f;
+
         for (int i = 0; i < count; i++){
-            float x = Random.Range(-sqrtCount, sqrtCount);
-            float y = Random.Range(-sqrtCount, sqrtCount);
-            agents[i] = new Agent(new Vector2(x + width / 2, y + height / 2),
-             Random.Range(0, 2* Mathf.PI), sensorAngle, sensorOffset);
+            if (spawnPos == SpawnPosition.Square){
+                pos.x = Random.Range(-bound, bound) + centerX;
+                pos.y = Random.Range(-bound, bound) + centerY;
+            }
+            else if (spawnPos == SpawnPosition.Circle){
+                float radius = bound * Mathf.Sqrt(Random.Range(0f, 1f));
+                float theta = Random.Range(0f, 1f) * 2 * Mathf.PI;
+                pos.x = centerX + radius * Mathf.Cos(theta);
+                pos.y = centerY + radius * Mathf.Sin(theta);  
+            }
+            else if (spawnPos == SpawnPosition.Point){
+                pos.x = centerX;
+                pos.y = centerY;
+            }
+
+            if (spawnDir == SpawnDirection.Random){
+                angle = Random.Range(0, 2 * Mathf.PI);
+            }
+            else if (spawnDir == SpawnDirection.Inwards){
+                float xMag = Mathf.Abs(pos.x - centerX);
+                float yMag = Mathf.Abs(pos.y - centerY);
+
+                if (pos.x > centerX) xMag *= -1;
+                if (pos.y > centerY) yMag *= -1;
+                angle = Mathf.Atan2(yMag, xMag);
+            }
+            else if (spawnDir == SpawnDirection.Outwards){
+                float xMag = -Mathf.Abs(pos.x - centerX);
+                float yMag = -Mathf.Abs(pos.y - centerY);
+
+                if (pos.x > centerX) xMag *= -1;
+                if (pos.y > centerY) yMag *= -1;
+                angle = Mathf.Atan2(yMag, xMag);
+            }
+            agents[i] = new Agent(pos, angle);
         }
     }
 
@@ -91,12 +128,18 @@ public class SlimeHandler : MonoBehaviour
 public struct Agent{
     Vector2 pos;
     float angle;
-    public float sensorAngle;
-    public float sensorOffset;
-    public Agent(Vector2 pos, float angle, float sensorAngle, float sensorOffset){
+    public Agent(Vector2 pos, float angle){
         this.pos = pos;
         this.angle = angle;
-        this.sensorAngle = sensorAngle;
-        this.sensorOffset = sensorOffset;
     }
+}
+enum SpawnPosition{
+    Square,
+    Circle,
+    Point
+}
+enum SpawnDirection{
+    Random,
+    Inwards,
+    Outwards
 }

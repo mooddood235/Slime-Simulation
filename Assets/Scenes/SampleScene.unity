@@ -220,12 +220,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a56baa5c8fcfb0444b7c3829a8abc0e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agentCount: 600000
+  agentCount: 300000
   speed: 200
   decaySpeed: 1.5
   turnSpeed: 1
   sensorAngle: 45
   sensorOffset: 50
+  spawnPos: 1
+  spawnDir: 1
   trailMap: {fileID: 0}
   processedTrailMap: {fileID: 0}
   dataCompute: {fileID: 7200000, guid: bada516734943814589be4523ba161e0, type: 3}
