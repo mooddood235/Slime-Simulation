@@ -12,6 +12,7 @@ public class SlimeHandler : MonoBehaviour
     [SerializeField] private float turnSpeed;
     [SerializeField] private float sensorAngle;
     [SerializeField] private float sensorOffset;
+    [SerializeField] private float bound;
     [SerializeField] private SpawnPosition spawnPos;
     [SerializeField] private SpawnDirection spawnDir;
     [SerializeField] private trailMode trailMode;
@@ -81,7 +82,6 @@ public class SlimeHandler : MonoBehaviour
 
         float centerX = width / 2f;
         float centerY = height / 2f;
-        float bound = height / 3f;
 
         for (int i = 0; i < count; i++){
             if (spawnPos == SpawnPosition.Square){
