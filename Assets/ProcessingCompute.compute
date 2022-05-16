@@ -1,10 +1,13 @@
 #pragma kernel CSMain
 
+const uint trailModeSimple = 0;
+const uint trailModeMean = 1;
 
 RWTexture2D<float4> trailMap;
 RWTexture2D<float4> processingMap;
 float decaySpeed;
 float deltaTime;
+uint trailMode;
 
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -17,5 +20,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     }
     mean /= 9.0;
     processingMap[id.xy] = mean;
-    trailMap[id.xy] = max(0, trailMap[id.xy] - decaySpeed * deltaTime);
+
+    float trailSample;
+
+    if (trailMode == trailModeSimple){
+        trailSample = trailMap[id.xy];
+    }
+    else{
+        trailSample = mean;
+    }
+    trailMap[id.xy] = max(0, trailSample - decaySpeed * deltaTime);
 }

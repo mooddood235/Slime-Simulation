@@ -14,6 +14,7 @@ public class SlimeHandler : MonoBehaviour
     [SerializeField] private float sensorOffset;
     [SerializeField] private SpawnPosition spawnPos;
     [SerializeField] private SpawnDirection spawnDir;
+    [SerializeField] private trailMode trailMode;
     [Space]
     [SerializeField] private RenderTexture trailMap;
     [SerializeField] private RenderTexture processedTrailMap;
@@ -70,6 +71,7 @@ public class SlimeHandler : MonoBehaviour
         processingCompute.SetTexture(0, "processingMap", processedTrailMap);
         processingCompute.SetFloat("decaySpeed", decaySpeed);
         processingCompute.SetFloat("deltaTime", Time.deltaTime);
+        processingCompute.SetInt("trailMode", (int)trailMode);
         processingCompute.Dispatch(0, (int)width / 32, (int)height / 32, 1);
     }
 
@@ -142,4 +144,8 @@ enum SpawnDirection{
     Random,
     Inwards,
     Outwards
+}
+enum trailMode{
+    simple,
+    mean
 }

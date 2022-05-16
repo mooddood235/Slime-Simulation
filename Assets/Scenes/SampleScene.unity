@@ -228,6 +228,7 @@ MonoBehaviour:
   sensorOffset: 50
   spawnPos: 1
   spawnDir: 1
+  trailMode: 1
   trailMap: {fileID: 0}
   processedTrailMap: {fileID: 0}
   dataCompute: {fileID: 7200000, guid: bada516734943814589be4523ba161e0, type: 3}
