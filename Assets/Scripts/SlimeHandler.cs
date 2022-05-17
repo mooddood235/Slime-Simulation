@@ -6,6 +6,7 @@ using TMPro;
 public class SlimeHandler : MonoBehaviour
 {
     private bool running;
+    private bool paused;
     private Agent[] agents;
     [SerializeField] private uint agentCount;
     [SerializeField] private float speed;
@@ -36,12 +37,14 @@ public class SlimeHandler : MonoBehaviour
     [SerializeField] private TMP_Dropdown spawnDirDrop;
     [SerializeField] private TMP_Dropdown trailModeDrop;
     [SerializeField] private TMP_Text startButtonText;
+    [SerializeField] private TMP_Text pauseButtonText;
     [SerializeField] private FlexibleColorPicker colorPicker;
     [Space]
     [SerializeField] private uint width;
     [SerializeField] private uint height;
     private void Awake() {
         running = false;
+        paused = false;
         trailMap = new RenderTexture((int)width, (int)height, 0);
         trailMap.enableRandomWrite = true;
         trailMap.filterMode = FilterMode.Point;
@@ -54,7 +57,7 @@ public class SlimeHandler : MonoBehaviour
     void Update()
     {   
         if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit();
-        if (running){
+        if (running && !paused){
             DispatchProcessingCompute();       
             DispatchDataCompute(); 
         }
@@ -166,6 +169,15 @@ public class SlimeHandler : MonoBehaviour
         }
         running = !running;
     }  
+    public void PauseUnpause(){
+        if (!paused){
+            pauseButtonText.text = "Unpause";
+        }
+        else{
+            pauseButtonText.text = "Pause";
+        }
+        paused = !paused;
+    }
     public void SetAgentCount(){
         agentCount = (uint)ParseFloat(agentField.text, agentCount);
     }
