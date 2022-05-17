@@ -1,23 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class Fade : EventTrigger
+public class Fade : MonoBehaviour
 {
     private CanvasGroup canvasGroup;
     private void Awake() {
         canvasGroup = GetComponent<CanvasGroup>();
     }
-    public override void OnPointerEnter(PointerEventData eventData)
-    {
-        canvasGroup.alpha = 1;
-        canvasGroup.blocksRaycasts = true;
+    private void Update() {
+        if (Show()){
+            canvasGroup.alpha = 1;
+        }
+        else{
+            canvasGroup.alpha = 0;
+        }
     }
-    public override void OnPointerExit(PointerEventData eventData)
-    {
-        canvasGroup.alpha = 0;
-        canvasGroup.blocksRaycasts = false;
+    private bool Show(){
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
+        pointerEventData.position = Input.mousePosition;
+        List<RaycastResult> rayCastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerEventData, rayCastResults);
+
+        foreach (RaycastResult rayCastResult in rayCastResults){
+            if (rayCastResult.gameObject.CompareTag("UI")){
+                return true;
+            }
+        }
+        return false;
     }
 }
