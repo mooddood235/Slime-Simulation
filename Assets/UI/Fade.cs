@@ -24,7 +24,7 @@ public class Fade : MonoBehaviour
         EventSystem.current.RaycastAll(pointerEventData, rayCastResults);
 
         foreach (RaycastResult rayCastResult in rayCastResults){
-            if (rayCastResult.gameObject.CompareTag("UI")){
+            if (rayCastResult.gameObject == this.gameObject){
                 return true;
             }
         }

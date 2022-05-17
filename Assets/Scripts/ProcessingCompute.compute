@@ -8,6 +8,7 @@ RWTexture2D<float4> processingMap;
 float decaySpeed;
 float deltaTime;
 uint trailMode;
+float4 color;
 
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -19,7 +20,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         }
     }
     mean /= 9.0;
-    processingMap[id.xy] = mean;
+    processingMap[id.xy] = color * mean;
 
     float trailSample;
 

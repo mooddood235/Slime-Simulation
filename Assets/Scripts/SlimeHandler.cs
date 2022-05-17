@@ -17,6 +17,7 @@ public class SlimeHandler : MonoBehaviour
     [SerializeField] private SpawnPosition spawnPos;
     [SerializeField] private SpawnDirection spawnDir;
     [SerializeField] private trailMode trailMode;
+    [SerializeField] private Vector4 color;
     [Space]
     [SerializeField] private RenderTexture trailMap;
     [SerializeField] private RenderTexture processedTrailMap; 
@@ -35,6 +36,7 @@ public class SlimeHandler : MonoBehaviour
     [SerializeField] private TMP_Dropdown spawnDirDrop;
     [SerializeField] private TMP_Dropdown trailModeDrop;
     [SerializeField] private TMP_Text startButtonText;
+    [SerializeField] private FlexibleColorPicker colorPicker;
     [Space]
     [SerializeField] private uint width;
     [SerializeField] private uint height;
@@ -85,6 +87,7 @@ public class SlimeHandler : MonoBehaviour
         processingCompute.SetFloat("decaySpeed", decaySpeed);
         processingCompute.SetFloat("deltaTime", Time.deltaTime);
         processingCompute.SetInt("trailMode", (int)trailMode);
+        processingCompute.SetVector("color", colorPicker.color);
         processingCompute.Dispatch(0, (int)width / 32, (int)height / 32, 1);
     }
     private void DispatchClearCompute(){
